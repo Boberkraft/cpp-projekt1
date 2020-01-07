@@ -1,5 +1,4 @@
-
-
+#include "stdafx.h"
 #include <iostream>
 #include <bitset>
 #include <climits>
@@ -9,6 +8,7 @@
 #include <iomanip>
 #include <assert.h>
 #include <math.h>
+#include <complex>
 
 using namespace std;
 
@@ -36,7 +36,7 @@ bool isDiv(int val, int mod) {
 	return val % mod == 0;
 }
 
-// So, a more efficient method is to test if n is divisible by 2 or 3,
+// So, a more efficient method is to test if n is divisible by 2 or 3, 
 // then to check through all the numbers of the form 6k +- 1 <= sqrt(n)
 bool isPrime(int val) {
 	if (val <= 3) {
@@ -63,7 +63,7 @@ bool isPrime(int val) {
 // 8 3 2 5
 // wyjscie
 // 3
-int f0(vector<int> &data, int from = NULL, int to = NULL) {
+int f0(vector<int> &data, int from=NULL, int to=NULL) {
 	if (from == NULL) { from = 0; }
 	if (to == NULL) { to = int(data.size()); }
 	int min_i = from;
@@ -82,15 +82,15 @@ int f0(vector<int> &data, int from = NULL, int to = NULL) {
 // wejscie
 // 4  2 2 5 1 12
 // wyjscie
-// 12 5 4 2 2 1
+// 12 5 4 2 2  1
 void f1(vector<int> &data, size_t from = 0, size_t to = NULL) {
 	if (to == NULL) { to = data.size(); }
 
-	int najmniejsza = int(f0(data, from, int(data.size())));
-	swap(data[from], data[najmniejsza]);
+	int najmniejsza = int(f0(data, from, to));
+	swap(data[najmniejsza], data[to - 1]);
 
-	if (from + 1 < data.size()) {
-		f1(data, from + 1);
+	if (from < to - 1 and to > 0) {
+		f1(data, from, to - 1);
 	}
 }
 
@@ -150,9 +150,9 @@ void f5(vector<int> &data, vector<int> &wyniki) {
 	for (size_t i = 0; i < data.size(); i++) {
 		wyniki.push_back(isPrime(data[i]));
 	}
-	// for (auto el : data) {
-	// el = isPrime(el);
-	// }
+	//	for (auto el : data) {
+	//		el = isPrime(el);
+	//	}
 }
 
 struct Point {
@@ -197,7 +197,7 @@ void orderPoints(vector<Point> &points) {
 		for (; sorted_values[j] != oryginal_values[i]; j++) {}
 		swap(points[i], points[j]);
 	}
-
+	
 }
 
 void cordsToPoints(vector<int> &data, vector<Point> &points) {
@@ -206,10 +206,10 @@ void cordsToPoints(vector<int> &data, vector<Point> &points) {
 	//auto x = data.back();
 	//data.pop_back();
 	pokazTablice(data);
-	for (size_t i = 0; i, i + 1 < data.size(); i += 2) {
+	for (size_t i = 0; i, i+1 < data.size(); i += 2) {
 		Point p;
 		p.x = data[i];
-		p.y = data[i + 1];
+		p.y = data[i+1];
 		points.push_back(p);
 	}
 }
@@ -237,42 +237,26 @@ double f6(vector<Point> &points) {
 // 0 1 2 1
 // wyjscie
 // -1
-void f7(vector<int> &data, vector<int> &wyniki) {
-	double d = data[0], c = data[1], b = data[2], a = data[3];
-	if (a == 0) {
-		double delta = c * c - 4 * b * d;
-		wyniki.push_back((-b + sqrt(delta)) / (2 * b));
-	}
-	if (a != 0) {
-		double f = c / a - (b * b) / 3.0 * a*a;
-		double g = (2.0 * b*b*b) / (27.0*a*a*a) - (b * c) / (3.0 * a*a) + d / a;
-		double h = (g * g) / 4.0 + (f*f*f) / 27.0;
-		if (h > 0) {
-			double x1 = pow(-g / 2.0 + sqrt(h), 1 / 3.0) + pow(-g / 2.0 - sqrt(h), 1 / 3.0) - b / 3.0 * a;
-			wyniki.push_back(x1);
-			return;
-		}
-		if (g < 0.0001 and f < 0.0001) {
-			double x1 = -cbrt(d / a);
-			wyniki.push_back(x1);
-			return;
-		}
+// http://web.cs.iastate.edu/~cs577/handouts/polyroots.pdf
+void f7(vector<int> &data, vector<complex<double>> &wyniki) {
+	double zzz = data[0], p = data[1], q = data[2], r = data[3];
+	double a = 1 / 3. * (3 * q - p * p);
+	double b = 1 / 27. * (2 * pow(p, 3) - 9 * p*q + 27 * r);
+	
+	double A = pow(-b / 2. + sqrt(b*b / 4. + pow(a, 3) / 24.), 1 / 3.);
+	double B = pow(-b / 2. - sqrt(b*b / 4. + pow(a, 3) / 24.), 1 / 3.);
 
-		double i = sqrt((g*g) / 4.0 - h);
-		double j = pow(i, 1 / 3.0);
-		double k = acos(-g / (2.0 * i));
-		double m = cos(k / 3.0);
-		double n = pow(3, 1 / 3.0)*sin(k / 3.0);
-		double p = -b / (3.0*a);
+	double y1 = A + B;
+	
+	complex<double> y1(A + B, 0);
+	complex<double> y2(-1 / 2.*(A + B), sqrt(3) / 2.*(A - B));
+	complex<double> y3(-1 / 2.*(A + B), -sqrt(3) / 2.*(A - B));
 
-		double x1 = 2 * j * m + p;
-		double x2 = -j * (m + n) + p;
-		double x3 = -j * (m - n) + p;
-		wyniki.push_back(x1);
-		wyniki.push_back(x2);
-		wyniki.push_back(x3);
 
-	}
+	wyniki.push_back(y1);
+	wyniki.push_back(y1);
+	wyniki.push_back(y1);
+
 }
 
 // Wyznacz wartość wyrażenia 1 * 2 ^ 2 + 2 * 3 ^ 2 + ... + n(n + 1) ^ 2 dla zadanego n.
@@ -288,7 +272,7 @@ double f8(int n) {
 	double sum_natural = n * (n + 1) / 2.;
 	double sum_cubes = pow(sum_natural, 2);
 	double sum_squeres = sum_natural * (2 * n + 1) / 3.0;
-
+	
 	return sum_cubes + 2 * sum_squeres + sum_natural;
 }
 
@@ -297,41 +281,33 @@ double f8(int n) {
 // 5
 // wyjscie
 // 2
-static inline unsigned int popcnt64(uint64_t n)
-{
-	/*#ifdef _MSC_VER
-	cout << "DUPA" << endl;
-	return __popcnt64(n);
-	#else
-	#if (defined __GNUC__ || defined __clang__) && defined USE_SSE
-	cout << "DUPA2" << endl;
-	return __builtin_popcountll(n);
-	#endif*/
-	cout << "DUPA3" << endl;
-	n -= ((n >> 1) & 0x5555555555555555LL);
-	n = (n & 0x3333333333333333LL) + ((n >> 2) & 0x3333333333333333LL);
-	return (((n + (n >> 4)) & 0x0f0f0f0f0f0f0f0fLL) * 0x0101010101010101LL) >> 56;
-	//#endif
-}
 
-int f9(unsigned long n) {
-	return popcnt64(n);
+int f9(unsigned long long int n) {
+	int counter = 0;
+	while (n != 0) {
+		counter += n & 1;
+		n >>= 1;
+	}
+
+	return counter;
 }
 
 void test();
 
 int main() {
-	//test();
-	//system("PAUSE");
-	//return 0;
+	test();
+	system("PAUSE");
+	return 0;
 
 	int subprogram, n;
 	vector<int> data;
 	vector<int> wyniki;
+	vector<complex<double>> wyniki_complex;
 	vector<Point> points;
 	while (cin >> subprogram >> n) {
 		data.clear();
 		wyniki.clear();
+		wyniki_complex.clear();
 		loadData(data, n);
 		switch (subprogram) {
 		case 0:
@@ -362,8 +338,8 @@ int main() {
 			cout << setprecision(0) << fixed << floor(f6(points)) << endl;
 			break;
 		case 7:
-			f7(data, wyniki);
-			pokazTablice(wyniki);
+			f7(data, wyniki_complex);
+			pokazTablice(wyniki_complex);
 			break;
 		case 8:
 			cout << setprecision(0) << fixed << f8(data[0]) << endl;
@@ -378,11 +354,25 @@ int main() {
 
 
 void test() {
+	vector<int> data0_1 = { 8,3 };
+	vector<int> data0_out_1 = { 2 };
+	cout << f0(data0_1, 0, data0_1.size()) + 1 << endl;
+	pokazTablice(data0_out_1);
 
-	vector<int> data0 = { 8,3,2,5 };
-	vector<int> data0_out = { 3 };
-	cout << f0(data0, 0, data0.size()) + 1 << endl;
-	pokazTablice(data0_out);
+	cout << endl;
+
+	vector<int> data0_2 = { 8 };
+	vector<int> data0_out_2 = { 1 };
+	cout << f0(data0_2, 0, data0_2.size()) + 1 << endl;
+	pokazTablice(data0_out_2);
+
+	cout << endl;
+
+
+	vector<int> data0_3 = { 8,3,2,5 };
+	vector<int> data0_out_3 = { 3 };
+	cout << f0(data0_3, 0, data0_3.size()) + 1 << endl;
+	pokazTablice(data0_out_3);
 
 	cout << endl;
 
@@ -444,8 +434,8 @@ void test() {
 
 	cout << endl;
 
-	int data8 = 307;
-	vector<int> data8_out = { 307 };
+	int data8 = 2;
+	vector<int> data8_out = { 22 };
 	cout << f8(data8) << endl;
 	pokazTablice(data8_out);
 
