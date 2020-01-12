@@ -372,12 +372,7 @@ unsigned long long int f8(int n) {
 	// n(n + 1)(n + 1)
 	// i * i+n * i+n
 	// i^3 + 2*i^2 + i
-	unsigned long long int sum_natural = n * (n + 1) / 2.;
-	unsigned long long int sum_cubes = pow(sum_natural, 2);
-	unsigned long long int sth = (2 * n + 1);
-	unsigned long long int sum_squeres = (sum_natural * sth) / (unsigned long long int) 3;
-
-	return sum_cubes + 2 * sum_squeres + sum_natural;
+  return (n * (n+1)* (n+2)*(3*n+5))/12.;
 }
 
 // Zlicz liczbę ustawionych bitów w liczbie naturalnej (unsigned).
@@ -385,6 +380,50 @@ unsigned long long int f8(int n) {
 // 5
 // wyjscie
 // 2
+
+int p(char a) {
+  return int(a - '0');
+}
+string dziel(string a) {
+  int val = 0;
+  string bb = "";
+  for (int i = 0; i < a.size(); i++) {
+    int dup = 0;
+    val = val*10 + p(a[i]);
+    if((val&1) == 1) {
+      dup = 1;
+    }
+    val = val/2;
+    bb = bb + to_string(val);
+    val = dup;
+  }
+  if (bb[0] == '0') {
+    return bb.substr(1);
+  }
+
+  return bb;
+}
+
+string prznies(string a, long b) {
+  if(a.size() == 0) {
+    return b;
+  }
+  if(a.size() == 1 and a[0] == '1') {
+    return ++b;
+  }
+  int n = p(a[a.size() - 1]);
+  if ((n&1) == 1) {
+    ++b;
+  }
+  a = dziel(a);
+  return prznies(a, b);
+}
+
+void new_f9(string data, vector<int> &wynik) {
+  wynik.push_back(prznies(data, 0));
+
+}
+
 
 void f9(vector<unsigned long long int> data, vector<int> &wyniki) {
 	for (auto number : data) {
@@ -472,12 +511,8 @@ int main() {
 			cout << endl;
 			break;
 		case 9:
-			vector<unsigned long long> wejscie_9;
-			for (int i = 0; i < n; i++) {
-				unsigned long long int x;
-				cin >> x;
-				wejscie_9.push_back(x);
-			}
+			string wejscie_9;
+		  cin >> wejscie_9;
 			f9(wejscie_9, wyniki);
 			pokazTablice(wyniki);
 			break;
