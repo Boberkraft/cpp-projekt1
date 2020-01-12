@@ -53,6 +53,7 @@ void print(float data, bool sep = true) {
 void inkrementujTablice(vector<int> &data) {
 	for (auto &num : data) {
 		num += 1;
+        // cout << "costam";
 	}
 }
 
