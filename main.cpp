@@ -314,7 +314,7 @@ void f4(vector<int> &data) {
 	}
 }
 
-void orderPoints(vector<Point> &points) {
+void orderPoints(vector<Point> &points, vector<Point> &out_points) {
 	int sum_x = 0;
 	int sum_y = 0;
 
@@ -323,14 +323,17 @@ void orderPoints(vector<Point> &points) {
 		sum_y += point.y;
 	}
 
-	double middle_x = double(sum_x / points.size());
-	double middle_y = double(sum_y / points.size());
+	double middle_x = double(sum_x / (double)points.size());
+	double middle_y = double(sum_y / (double)points.size());
 
 	vector<int> oryginal_values;
 	vector<int> sorted_values;
 	for (auto point : points) {
-		int angle = int(atan2(point.x - middle_x,
-			point.y - middle_y) * 1000);
+		int angle = int(atan2(point.y - middle_y,
+			point.x - middle_x) * 1000);
+		//cout << setprecision(3) << atan2(point.y - middle_y,
+		//	point.x - middle_x);
+		//cout << endl;
 		oryginal_values.push_back(angle);
 		// razy 1000 bo chce miec duzo miejsc po przecinku w incie do porównania
 		sorted_values.push_back(angle);
@@ -338,11 +341,11 @@ void orderPoints(vector<Point> &points) {
 
 	f1(sorted_values);
 
-	size_t i = 0;
-	for (; i < points.size(); i++) {
+
+	for (size_t i = 0; i < points.size(); i++) {
 		size_t j = 0;
-		for (; sorted_values[j] != oryginal_values[i]; j++) {}
-		swap(points[i], points[j]);
+		for (;  sorted_values[i] != oryginal_values[j]; j++) {}
+		out_points.push_back(points[j]);
 	}
 
 }
@@ -352,7 +355,7 @@ void cordsToPoints(vector<double> &data, vector<Point> &points) {
 	//data.pop_back();
 	//auto x = data.back();
 	//data.pop_back();
-	for (size_t i = 0; i, i + 1 < data.size(); i += 2) {
+	for (size_t i = 0; i, i < data.size(); i += 2) {
 		Point p;
 		p.x = data[i];
 		p.y = data[i + 1];
@@ -457,14 +460,16 @@ void f5(vector<int> &data, int &x) {
 // 0 0 0 2 2 2 2 0
 // wyjscie
 // 4
-double f6(vector<Point> &points) {
-	orderPoints(points);
-	double area = 0;
-	int j;
-	for (size_t i = 0; i < points.size(); i++) {
-		j = int((i + 1) % points.size());
-		area += points[i].x * points[j].y;
-		area -= points[j].x * points[i].y;
+double f6(vector<Point> &up) {
+
+	vector<Point> p;
+ 	orderPoints(up, p);
+
+	double area = 0.0;
+	int j = p.size() - 1;
+	for (size_t i = 0; i < p.size(); i++) {
+		area += (p[j].x + p[i].x) * (p[j].y - p[i].y);
+		j = i;
 	}
 	area = abs(area) / 2.0;
 	return area;
@@ -648,7 +653,7 @@ int main() {
 			f5(data,  how_many);
 			break;
 		case 6:
-			for (int i = 0; i < 4; i++) {
+			for (int i = 0; i < n; i++) {
 				double x;
 				cin >> x;
 				dane_dobule.push_back(x);
@@ -740,6 +745,14 @@ void test6() {
 	cordsToPoints(data6, data6_points);
 	cout << f6(data6_points) << endl;
 	pokazTablice(data6_out);
+
+
+	vector<double> adata6 = { 94, -21, 94, 50, 81, 56, 26, 70, -26, 54, -88, - 35, -79, -80, 4, -71 };
+	vector<Point> adata6_points;
+	vector<int> adata6_out = { 18891 };
+	cordsToPoints(adata6, adata6_points);
+	cout << f6(adata6_points) << endl;
+	pokazTablice(adata6_out);
 }
 void test7() {
 	int start_logging = 9;
