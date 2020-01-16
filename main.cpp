@@ -12,62 +12,7 @@
 #include <cstdlib>
 #include <numeric>
 
-
-#define ll long long
 using namespace std;
-
-/*
-* calculates (a * b) % c taking into account that a * b might overflow
-*/
-ll mulmod(ll a, ll b, ll mod)
-{
-	ll x = 0, y = a % mod;
-	while (b > 0)
-	{
-		if (b % 2 == 1)
-		{
-			x = (x + y) % mod;
-		}
-		y = (y * 2) % mod;
-		b /= 2;
-	}
-	return x % mod;
-}
-
-int mod_pow(int a, int b, int M) {
-	int x = 0, y = a;
-	while (b > 0) {
-		if (b % 2 == 1) {
-			x = (x + y);
-			if (x > M)
-				x %= M;
-		}
-		y = (y * 2);
-		if (y > M)
-			y %= M;
-		b /= 2;
-	}
-	return x;
-}
-/*
-* modular exponentiation
-*/
-ll modulo(ll base, ll exponent, ll mod)
-{
-	ll x = 1;
-	ll y = base;
-	while (exponent > 0)
-	{
-		if (exponent % 2 == 1)
-			x = (x * y) % mod;
-		y = (y * y) % mod;
-		exponent = exponent / 2;
-	}
-	return x % mod;
-}
-
-using namespace std;
-
 
 struct Point {
 	double x;
@@ -183,38 +128,24 @@ inline bool isDiv(unsigned int val, unsigned int mod) {
 
 
 
-int gcd(int a, int b) {
-	return (b == 0) ? a : gcd(b, a % b);
-}
-
-
 // So, a more efficient method is to test if n is divisible by 2 or 3, 
 // then to check through all the numbers of the form 6k +- 1 <= sqrt(n)
 inline bool isPrime(unsigned val) {
 	if (val <= 3) {
-		return val > 1;
-	} else if (isDiv(val, 2) or isDiv(val, 3)) {
+		return true;
+	}
+	if (isDiv(val, 2)) {
 		return false;
 	}
-	int iteration = 10;
-	unsigned int s = val - 1;
-	while (s % 2 == 0)
-	{
-		s /= 2;
+	if (isDiv(val, 3)) {
+		return false;
 	}
-	for (int i = 0; i < iteration; i++)
-	{
-		unsigned int a = rand() % (val - 1) + 1, temp = s;
-		unsigned int mod = modulo(a, temp, val);
-		while (temp != val - 1 && mod != 1 && mod != val - 1)
-		{
-			mod = mod_pow(mod, mod, val);
-			temp *= 2;
-		}
-		if (mod != val - 1 && temp % 2 == 0)
-		{
+	int acc = 5;
+	while (acc * acc <=val) {
+		if (isDiv(val, acc) or isDiv(val, acc + 2)) {
 			return false;
 		}
+		acc += 6;
 	}
 	return true;
 }
