@@ -241,7 +241,9 @@ long double f3(vector<int> &old_data) {
 void f4(vector<int> &data) {
 	size_t size = data.size();
 	for (size_t i = 0; i < size / 2; i++) {
-		swap(data[i], data[size - i - 1]);
+		data[i] = data[i] + data[size - i - 1];
+		data[size - i - 1] = data[i] - data[size - i - 1];
+		data[i] = data[i] - data[size - i - 1];
 	}
 }
 
@@ -490,42 +492,44 @@ int p(char a) {
 }
 string dziel(string a) {
 	int val = 0;
-	string bb = "";
-	for (int i = 0; i < a.size(); i++) {
-		int dup = 0;
-		val = val * 10 + p(a[i]);
-		if ((val & 1) == 1) {
-			dup = 1;
+	string nowy = "";
+
+	for (auto literka : a) {
+		int carry = 0;
+		val = val * 10 + p(literka);
+		if ((p(literka) & 1) == 1) {
+			carry = 1; // przeniesienie
 		}
 		val = val / 2;
-		bb = bb + to_string(val);
-		val = dup;
-	}
-	if (bb[0] == '0') {
-		return bb.substr(1);
+		nowy += to_string(val);
+		val = carry;
 	}
 
-	return bb;
+	if (nowy[0] == '0') {
+		nowy = nowy.substr(1);
+	}
+	return nowy;
 }
 
-int prznies(string a, long b) {
+int zlicz_ostatni_bit(string a, long ile) {
+
 	if (a.size() == 0) {
-		return b;
+		return ile;
 	}
 	if (a.size() == 1 and a[0] == '1') {
-		return ++b;
+		return ile + 1;
 	}
-	int n = p(a[a.size() - 1]);
-	if ((n & 1) == 1) {
-		++b;
+	int last = p(a[a.size() - 1]);
+	if ((last & 1) == 1) {
+		ile++;
 	}
 	a = dziel(a);
-	return prznies(a, b);
+	return zlicz_ostatni_bit(a, ile);
 }
 
 void f9(vector<string> data, vector<int> &wynik) {
 	for (auto napis : data) {
-		wynik.push_back(prznies(napis, 0));
+		wynik.push_back(zlicz_ostatni_bit(napis, 0));
 	}
 }
 
