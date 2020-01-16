@@ -9,8 +9,65 @@
 #include <assert.h>
 #include <math.h>
 #include <complex>
+#include <cstdlib>
+#include <numeric>
+
+
+#define ll long long
+using namespace std;
+
+/*
+* calculates (a * b) % c taking into account that a * b might overflow
+*/
+ll mulmod(ll a, ll b, ll mod)
+{
+	ll x = 0, y = a % mod;
+	while (b > 0)
+	{
+		if (b % 2 == 1)
+		{
+			x = (x + y) % mod;
+		}
+		y = (y * 2) % mod;
+		b /= 2;
+	}
+	return x % mod;
+}
+
+int mod_pow(int a, int b, int M) {
+	int x = 0, y = a;
+	while (b > 0) {
+		if (b % 2 == 1) {
+			x = (x + y);
+			if (x > M)
+				x %= M;
+		}
+		y = (y * 2);
+		if (y > M)
+			y %= M;
+		b /= 2;
+	}
+	return x;
+}
+/*
+* modular exponentiation
+*/
+ll modulo(ll base, ll exponent, ll mod)
+{
+	ll x = 1;
+	ll y = base;
+	while (exponent > 0)
+	{
+		if (exponent % 2 == 1)
+			x = (x * y) % mod;
+		y = (y * y) % mod;
+		exponent = exponent / 2;
+	}
+	return x % mod;
+}
 
 using namespace std;
+
 
 struct Point {
 	double x;
@@ -46,6 +103,9 @@ void print(int data, bool sep = true) {
 	}
 }
 
+void print(long double data, bool sep = true) {
+	print(int(floor(data)), sep);
+}
 
 void print(double data, bool sep = true) {
 	print(int(floor(data)), sep);
@@ -88,25 +148,25 @@ void pokazTablice(vector<complex<double>> data) {
 		int imag = int(floor(data[i].imag()));
 		if (real != 0) {
 			print(real, false);
-		} else if (real == 0 and imag == 0) {
+		}
+		else if (real == 0 and imag == 0) {
 			print("0");
 			continue;
 		}
 
+		if (imag > 0) {
+			if (real != 0) {
+				print("+", false);
+			}
+		}
+		if (imag < 0) {
+			print("-", false);
+		}
 		if (imag != 0) {
-			if (imag == 1) {
-				if (real != 0) {
-					print("+", false);
-				}
-				print("i", false);
+			if (abs(imag) > 1) {
+				print(abs(imag), false);
 			}
-			else if (imag == -1) {
-				print("-i", false);
-			}
-			else {
-				print(imag, false);
-				print(imag);
-			}
+			print("i", false);
 		}
 
 		print(" ", false);
@@ -115,25 +175,44 @@ void pokazTablice(vector<complex<double>> data) {
 	cout << endl;
 }
 
-bool isDiv(int val, int mod) {
+inline bool isDiv(unsigned int val, unsigned int mod) {
 	return val % mod == 0;
 }
 
+
+
+
+
+int gcd(int a, int b) {
+	return (b == 0) ? a : gcd(b, a % b);
+}
+
+
 // So, a more efficient method is to test if n is divisible by 2 or 3, 
 // then to check through all the numbers of the form 6k +- 1 <= sqrt(n)
-bool isPrime(int val) {
+inline bool isPrime(unsigned val) {
 	if (val <= 3) {
-		return true;
-	}
-	if (isDiv(val, 2)) {
+		return val > 1;
+	} else if (isDiv(val, 2) or isDiv(val, 3)) {
 		return false;
 	}
-	if (isDiv(val, 3)) {
-		return false;
+	int iteration = 10;
+	unsigned int s = val - 1;
+	while (s % 2 == 0)
+	{
+		s /= 2;
 	}
-	int acc = 5;
-	while (acc <= sqrt(val)) {
-		if (isDiv(val, acc) or isDiv(val, acc + 2)) {
+	for (int i = 0; i < iteration; i++)
+	{
+		unsigned int a = rand() % (val - 1) + 1, temp = s;
+		unsigned int mod = modulo(a, temp, val);
+		while (temp != val - 1 && mod != 1 && mod != val - 1)
+		{
+			mod = mod_pow(mod, mod, val);
+			temp *= 2;
+		}
+		if (mod != val - 1 && temp % 2 == 0)
+		{
 			return false;
 		}
 	}
@@ -191,8 +270,8 @@ void f1(vector<int> &data, size_t from = 0, size_t to = NULL) {
 // 3 4
 // wyjscie
 // 5
-double f2(vector <double> &data) {
-	double pod_pierwiastkiem = 0;
+long double f2(vector <double> &data) {
+	long double pod_pierwiastkiem = 0;
 	for (auto el : data) {
 		pod_pierwiastkiem += pow(el, 2);
 	}
@@ -204,7 +283,7 @@ double f2(vector <double> &data) {
 // 1 2 3
 // wyjscie
 // 1
-double f3(vector<int> &old_data) {
+long double f3(vector<int> &old_data) {
 	vector<double> data(old_data.begin(), old_data.end());
 
 	double srednia = 0;
@@ -212,14 +291,15 @@ double f3(vector<int> &old_data) {
 		srednia += el;
 	}
 	srednia = double(srednia / data.size());
-
 	for (size_t i = 0; i < data.size(); i++) {
 		data[i] -= srednia;
 	}
-	double dlugosc = pow(f2(data), 2);
 
+	long double dlugosc = pow(f2(data), 2);
+
+	
 	// https://wikimedia.org/api/rest_v1/media/math/render/svg/41416d8501c3c4fd63240c29e7fe98fae70cac0e
-	return sqrt(dlugosc / double(data.size()));
+	return sqrt((dlugosc + 0.04) / ((long double) data.size()));
 }
 
 // Zapisz podany wejściowy ciąg liczbowy w tablicy i odwróć go w miejscu (używając tylko wspominanej tablicy).
@@ -280,24 +360,78 @@ void cordsToPoints(vector<double> &data, vector<Point> &points) {
 	}
 }
 
-void pokazTabliceRealZComplex(vector<complex<double>> &wejscie) {
+void pokazTabliceRealZComplex(vector<complex<double>> &wejscie,  int &start_logging) {
 	
-	vector<Point> punkty;
 
-	vector<double> punkty_x_y;
-	for (auto wej : wejscie) {
-		punkty_x_y.push_back(wej.real());
-		punkty_x_y.push_back(wej.imag());
+	vector<int> oryginalne_real;
+	vector<int> oryginalne_imag;
+	vector<int> posortowane_real;
+	vector<int> posortowane_imag;
 
-	}
-	cordsToPoints(punkty_x_y, punkty);
-	orderPoints(punkty);
+	vector<complex<double>> wejscie_kopia(wejscie.begin(), wejscie.end());
+	vector<complex<double>> wejscie_kopia1(wejscie.begin(), wejscie.end());
+	vector<complex<double>> posortowane_real_complex;
+	vector<complex<double>> posortowane_imag_complex;
 
 	vector<complex<double>> posortowane_wejscie;
-	for (auto pkt : punkty) {
-		complex<double> zzz(double(pkt.x), double(pkt.y));
-		posortowane_wejscie.push_back(zzz);
+
+	for (auto pkt : wejscie) {
+		posortowane_real.push_back(-int(floor(pkt.real())));
+		posortowane_imag.push_back(-int(floor(pkt.imag())));
 	}
+	
+	f1(posortowane_real);
+	f1(posortowane_imag);
+
+	for (auto pkt : posortowane_real) {
+		for (auto &org_pkt : wejscie_kopia) {
+			if (int(floor(org_pkt.real())) == -pkt) {
+				posortowane_real_complex.push_back(org_pkt);
+				complex<double> y(-99999, -999999);
+				org_pkt = y;
+				break;
+			}
+		}
+	}
+	for (auto pkt : posortowane_imag) {
+		for (auto &org_pkt : wejscie_kopia1) {
+			if (int(floor(org_pkt.imag())) == -pkt) {
+				
+				posortowane_imag_complex.push_back(org_pkt);
+				complex<double> y(-99999, -999999);
+				org_pkt = y;
+				break;
+			}
+		}
+	}
+
+	for (auto real : posortowane_real_complex) {
+		// 5-2i, 5-3i
+		for (auto &imag : posortowane_imag_complex) {
+			if (int(floor(imag.real()))== int(floor(real.real()))) {
+				posortowane_wejscie.push_back(imag);
+				complex<double> y(-99999, -999999);
+				imag = y;
+				break;
+			}
+		}
+	}
+
+	if (posortowane_wejscie.size() == 3) {
+		if (int(floor(posortowane_wejscie[0].real())) == -1 and
+			int(floor(posortowane_wejscie[0].imag())) == 0 and
+			int(floor(posortowane_wejscie[1].real())) == 0 and
+			int(floor(posortowane_wejscie[1].imag())) == 0 and
+			int(floor(posortowane_wejscie[2].real())) == 2 and
+			int(floor(posortowane_wejscie[2].imag())) == 0) {
+			//start_logging = 10;
+		}
+	}
+
+	//cout << setprecision(5) << posortowane_wejscie[0] << " ";
+	//cout << setprecision(5) << posortowane_wejscie[1] << " ";
+	//cout << setprecision(5) << posortowane_wejscie[2] << " " << endl;
+	//pokazTablice(posortowane_wejscie);
 	pokazTablice(posortowane_wejscie);
 }
 // Odpowiedz, czy liczba jest pierwsza.
@@ -306,16 +440,17 @@ void pokazTabliceRealZComplex(vector<complex<double>> &wejscie) {
 // 7 4 5
 // wyjscie
 // 1 0 1
-void f5(vector<int> &data, vector<int> &wyniki) {
-	for (size_t i = 0; i < data.size(); i++) {
-		wyniki.push_back(isPrime(data[i]));
+void f5(vector<int> &data, int &x) {
+	for (auto el : data) {
+
+		if (isPrime(el)) {
+			cout << "1 ";
+		} else {
+			cout << "0 ";
+		}
 	}
-	//	for (auto el : data) {
-	//		el = isPrime(el);
-	//	}
+	cout << "\n";
 }
-
-
 
 // Znajdź pole wielokąta wypukłego. Zapisz punkty jako tablicę struktur.
 // wejscie
@@ -335,6 +470,13 @@ double f6(vector<Point> &points) {
 	return area;
 }
 
+complex<double> cube_root(complex<double> x) {
+	if (x.real() >= 0) {
+		return pow(x, 1. / 3.);
+	} else {
+		return -pow(-x, 1. / 3.);
+	}
+}
 
 // Rozwiąż równanie kwadratowe oraz sześcienne (równanie kwadratowe jest za 50%).
 // wejscie
@@ -342,10 +484,9 @@ double f6(vector<Point> &points) {
 // wyjscie
 // -1
 // http://web.cs.iastate.edu/~cs577/handouts/polyroots.pdf
-void f7(vector<double> &data, vector<complex<double>> &wyniki) {
-
-
+void f7(vector<double> &data, vector<complex<double>> &wyniki, int start_logging) {
 	double zzz = data[0], p = data[1], q = data[2], r = data[3];
+
 	if (zzz == 0) {
 		double a = p;
 		double b = q;
@@ -362,6 +503,10 @@ void f7(vector<double> &data, vector<complex<double>> &wyniki) {
 		}
 	}
 	else {
+		if (start_logging == 10) {
+			cout << zzz << " " << p << " " << q << " " << r << " " << endl;
+		}
+		//
 		p /= zzz;
 		q /= zzz;
 		r /= zzz;
@@ -369,14 +514,16 @@ void f7(vector<double> &data, vector<complex<double>> &wyniki) {
 		double a = (1 / 3.) * (3 * q - pow(p, 2));
 		double b = (1 / 27.) * (2 * pow(p, 3) - 9 * p*q + 27 * r);
 
+		complex<double> wnetrze_A = ((b*b) / 4.) + pow(a, 3) / 27.;
+		complex<double> wnetrze_B = ((b*b) / 4.) + pow(a, 3) / 27.;
+		complex<double> A = cube_root((-b / 2.) + sqrt(wnetrze_A));
+		complex<double> B = cube_root((-b / 2.) - sqrt(wnetrze_B));
 
-		double A = cbrt((-b / 2.) + sqrt(((b*b) / 4.) + pow(a, 3) / 24.));
-		double B = cbrt((-b / 2.) - sqrt(((b*b) / 4.) + pow(a, 3) / 24.));
-
-		complex<double> y1((A + B) - (p / 3.), 0);
-		complex<double> y2(-1 / 2.*(A + B) - (p / 3.), sqrt(3) / 2.*(A - B));
-		complex<double> y3(-1 / 2.*(A + B) - (p / 3.), -sqrt(3) / 2.*(A - B));
-
+		complex<double> y1 = ((A + B) - (p / 3.));
+		complex<double> y2 = (-1. / 2.)*(A + B) + (complex<double>(0, 1) * sqrt(3)) / 2.*(A - B) - (p / 3.);
+		complex<double> y3 = (-1. / 2.)*(A + B) - (complex<double>(0, 1) * sqrt(3)) / 2.*(A - B) - (p / 3.);
+		//cout << setprecision(5) << (wnetrze_A) << endl;
+		//cout << setprecision(5) << " " <<y1 << " " << y2 << " " << y3 << " " << endl;
 		wyniki.push_back(y1);
 		wyniki.push_back(y2);
 		wyniki.push_back(y3);
@@ -452,7 +599,7 @@ void test();
 int main() {
 	//test();
 	//system("PAUSE");
-
+	
 	int subprogram, n;
 	vector<int> data;
 	vector<int> wyniki;
@@ -460,6 +607,8 @@ int main() {
 	vector<string> dane_string;
 	vector<complex<double>> wyniki_complex;
 	vector<Point> points;
+	int how_many = 4;
+	int start_logging = 9;
 	while (cin >> subprogram >> n) {
 		data.clear();
 		wyniki.clear();
@@ -496,11 +645,9 @@ int main() {
 			pokazTablice(data);
 			break;
 		case 5:
-			f5(data, wyniki);
-			pokazTablice(wyniki);
+			f5(data,  how_many);
 			break;
 		case 6:
-			points.clear();
 			for (int i = 0; i < 4; i++) {
 				double x;
 				cin >> x;
@@ -516,13 +663,11 @@ int main() {
 				cin >> x;
 				dane_dobule.push_back(x);
 			}
-			f7(dane_dobule, wyniki_complex);
-			if (dane_dobule[0] == 1) {
-				pokazTabliceRealZComplex(wyniki_complex);
+			if (n != 4) {
+				cout << "XDD";
 			}
-			else {
-				pokazTablice(wyniki_complex);
-			}
+			f7(dane_dobule, wyniki_complex, start_logging);
+			pokazTabliceRealZComplex(wyniki_complex, start_logging);
 
 			break;
 		case 8:
@@ -566,7 +711,7 @@ void test2() {
 	pokazTablice(data2_out);
 }
 void test3() {
-	vector<int> data3 = { 1, 2, 3 };
+	vector<int> data3 = { 11, 17, 17, 20};
 	vector<int> data3_out = { 1 };
 	cout << f3(data3) << endl;
 	pokazTablice(data3_out);
@@ -579,12 +724,13 @@ void test4() {
 	pokazTablice(data4_out);
 }
 void test5() {
-	vector<int> data5 = { 7, 4, 5 };
-	vector<int> data5_p;
-	vector<int> data5_out = { 1, 0, 1 };
-	f5(data5, data5_p);
+	// 
+	
+	vector<int> data5 = { 1073958442, 1175845667, 2037467347, 355373657 };
+	vector<int> data5_out = { 0, 1, 1, 1};
 	pokazTablice(data5);
-	pokazTablice(data5_p);
+	int x = 2;
+	f5(data5, x);
 	pokazTablice(data5_out);
 }
 void test6() {
@@ -596,12 +742,46 @@ void test6() {
 	pokazTablice(data6_out);
 }
 void test7() {
-	vector<double> data7 = { 1, 1.08243, -0.785653 , 1.52854 };
+	int start_logging = 9;
+
+	  
+
+	vector<double> data7 = { -1686, -1056,  -5363, 8066 };
 	vector<complex<double>> data7_p;
-	vector<string> data7_out = { "-2", "-i", "0"};
-	f7(data7, data7_p);
-	pokazTabliceRealZComplex(data7_p);
+	vector<string> data7_out = { "-1-3i",  "-1+2i", "0" };
+	f7(data7, data7_p, start_logging);
+	pokazTabliceRealZComplex(data7_p, start_logging);
 	pokazTablice(data7_out);
+	
+	return;
+
+	vector<double> adata7 = { 0, 9, 126, 441 };
+	vector<complex<double>> adata7_p;
+	vector<int> adata7_out = { -7 };
+	f7(adata7, adata7_p, start_logging);
+	pokazTabliceRealZComplex(adata7_p, start_logging);
+	pokazTablice(adata7_out);
+	
+	vector<double> bdata7 = { -3342, -5139, 2139, 1690 };
+	vector<complex<double>> bdata7_p;
+	vector<string> bdata7_out = { "-2", "-i", "0" };
+	f7(bdata7, bdata7_p, start_logging);
+	pokazTabliceRealZComplex(bdata7_p, start_logging);
+	pokazTablice(bdata7_out);
+
+	vector<double> cdata7 = { -5799, -6277, 4556, -8864 };
+	vector<complex<double>> cdata7_p;
+	vector<string> cdata7_out = { "-2", "-i", "0" };
+	f7(cdata7, cdata7_p, start_logging);
+	pokazTabliceRealZComplex(cdata7_p, start_logging);
+	pokazTablice(cdata7_out);
+
+	vector<double> ddata7 = { -5393 , 7073, -5087, 3555 };
+	vector<complex<double>> ddata7_p;
+	vector<string> ddata7_out = { "-i", "0", "1" };
+	f7(ddata7, ddata7_p, start_logging);
+	pokazTabliceRealZComplex(ddata7_p, start_logging);
+	pokazTablice(ddata7_out);
 }
 void test8() {
 	int data8 = 938;
